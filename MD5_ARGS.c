@@ -12,7 +12,7 @@
 
 int main (int argc, char *argv[])
 {
-
+	printf("Hola mundo, ya copie el repo");
 	return 0;
 }
 
