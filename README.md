@@ -9,14 +9,20 @@ REQUERIMIENTOS:
 	*Implementa una aplicacion que calcule la ”huella digital", o resumen
 	 de un mensaje de longitud arbitraria a traves del algoritmo de resumen
 	 de mensajes MD5.
+
 	*La aplicacion debera cumplir completamente con el estandar de MD5, el
 	 cual es RFC1321.
+
 	*La aplicacion debera ser capaz de recibir a traves de un parametro, el
 	 nombre del archivo del cual obtendra el mensaje a procesar.
+
 	*El mensaje a procesar debera ser leıdo desde un archivo.
+
 	*El tamano mınimo del mensaje a procesar debe ser desde 1 byte, hasta
 	 256 bytes.
+
 	*La implementacion se llevara a cabo solo mediante el lenguaje C.
+
 	*El resultado sera mostrado en pantalla.
 
 ENTREGA:
