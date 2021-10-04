@@ -1,0 +1,4 @@
+Este documento es un archivo de prueba para poder obtener el hash MD5 por
+medio de nuestro programa creado para la tarea 04 de programacion en C.
+La longitud maxima del archivo debe de ser de 256 Bytes, este archivo cumple
+con exactitud dicha condicion...
