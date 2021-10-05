@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <string.h>
+#include <stdbool.h>
 #include <stdlib.h>
 
 /*
@@ -16,6 +18,8 @@
 #define G(x, y, z) (((x) & (z)) | ((y) & (~z)))
 #define H(x, y, z) ((x) ^ (y) ^ (z))
 #define I(x, y, z) ((y) ^ ((x) | (~z)))
+//Definicion de la funcion de corrimiento izquierdo
+#define CORRIMIENTO_IZQ(num, cantidad) (((num) << (cantidad)) | ((num) >> (32 - (cantidad))))
 
 typedef unsigned long int buff32bit;
 
@@ -28,7 +32,7 @@ int main (int argc, char *argv[])
 	 * */
 	buff32bit one = 0x80, full = 0xFF, M[16];
 	buff32bit cntBits0=0, cntBits1=0, temp;
-	buff32bit A,B,C,D,AA,BB,CC,DD;
+	buff32bit A,B,C,D,AA,BB,CC,DD, TEMP = 0, H0, H1, H2, H3;
 	unsigned char cicl=0, i = 0, j = 0, k = 0, letra=0, nBloques;
 	FILE *Archivo;
 	//Creacion del array de corrimientos S
@@ -74,17 +78,21 @@ int main (int argc, char *argv[])
 	*/
 
 	//Se asignan los valores iniciales al buffer
-	A = 0x01234567;
-	B = 0x89ABCDEF;
-	C = 0xFEDCBA98;
-	D = 0x76543210;
+	A = 0x67452301;
+	B = 0xEFCDAB89;
+	C = 0x98BADCFE;
+	D = 0x10325476;
+	H0 = A;
+	H1 = B;
+	H2 = C;
+	H3 = D;
 
 	/*
 	 * Este bloque de codigo se encarga de leer el archivo y pasarlo a un
 	 * array de registros de 32 bits llamado M para cada bloque.
 	 */
 
-	for(; k <= nBloques; k++){
+for(; k <= nBloques; k++){
 	//Paso de informacion del archivo al bloque M
 	for (i=0; i < 16; i++) M[i] = 0;
 	for (i = 0; i < 16 && letra != 0XFF; i++){
@@ -119,25 +127,77 @@ int main (int argc, char *argv[])
 				M[15] = M[15] | (temp << (8*j));
 			}
 	} 
-	/*
 	//Estas lineas de codigo sirven para desplegar los bloques M de cada
 	//iteracion.
 	printf("----------Impresion del bloque M%d----------\n", k+1);
 
-	for (cicl=0; cicl < 16; cicl++){
-		printf("0x%8lx\n", M[cicl]);
-	}
-	*/
-
-	
-	}
-	//fin de las 64 iteraciones para cada bloque
-
-	
-
+	for (cicl=0; cicl < 16; cicl++) printf("0x%8lx\n", M[cicl]);
 
 /* Se agrega branch de Gustavo */
+int l=0, n=0;
+for (int i=0;i<4;i++)
+	{
+	if (n < 16) 
+	{
+            l = n;
+        }
+	else if (n < 32)
+	{
+		l = (5*n + 1) % 16;
+        }
+	else if (n < 48)
+	{
+		l = (3*n + 5) % 16;          
+        }
+	else 
+	{
+		l= (7*n) % 16;
+	}
+	for (int j=0; j<16; j++)
+		{
+		if (i == 0 ) 
+		{
+			TEMP = D;
+		        D = C;
+		        C = B;
+			B = B + CORRIMIENTO_IZQ(((A +F(B,C,D) + M[l] + K [n])),S[j]);
+			A = TEMP;
+		}
+		else if (i == 1)
+		{
+		        TEMP = D;
+		        D = C;
+		        C = B;
+			B = B + CORRIMIENTO_IZQ(((A +G(B,C,D) + M[l] + K [n])),S[j]);
+			A = TEMP;
+		}
+		else if (i == 2)
+		{
+		        TEMP = D;
+		        D = C;
+		        C = B;
+			B = B + CORRIMIENTO_IZQ(((A +H(B,C,D) + M[l] + K [n])),S[j]);
+			A = TEMP;         
+		}
+		else 
+		{
+			TEMP = D;
+		        D = C;
+		        C = B;
+			B = B + CORRIMIENTO_IZQ(((A +I(B,C,D) + M[l] + K [n])),S[j]);
+			A = TEMP;
+		}
+	n+=1;
+		}
+	}
 
+	//fin de las 64 iteraciones para cada bloque
+	//Se actualiza el valor del hash global.
+	H0+=A;
+	H1+=B;
+	H2+=C;
+	H3+=D;
+}
 
        	return 0; 
 } 
