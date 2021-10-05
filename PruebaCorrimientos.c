@@ -49,63 +49,62 @@ int main ()
 int l=0, n=0;
 for (int i=0;i<4;i++)
 	{
-		if (n < 16) 
-		{
+	if (n < 16) 
+	{
             l = n;
         }
-		else if (n < 32)
-		{
-        	l = (5*n + 1) % 16;
+	else if (n < 32)
+	{
+		l = (5*n + 1) % 16;
         }
-		else if (n < 48)
-		{
-            l = (3*n + 5) % 16;          
+	else if (n < 48)
+	{
+		l = (3*n + 5) % 16;          
         }
+	else 
+	{
+		l= (7*n) % 16;
+	}
+	for (int j=0; j<16; j++)
+		{
+		if (i == 0 ) 
+		{
+			TEMP = D;
+		        D = C;
+		        C = B;
+			B = B + CORRIMIENTO_IZQ(((A +F(B,C,D) + M[l] + K [n])),S[j]);
+			A = TEMP;
+		}
+		else if (i == 1)
+		{
+		        TEMP = D;
+		        D = C;
+		        C = B;
+			B = B + CORRIMIENTO_IZQ(((A +G(B,C,D) + M[l] + K [n])),S[j]);
+			A = TEMP;
+		}
+		else if (i == 2)
+		{
+		        TEMP = D;
+		        D = C;
+		        C = B;
+			B = B + CORRIMIENTO_IZQ(((A +H(B,C,D) + M[l] + K [n])),S[j]);
+			A = TEMP;         
+		}
 		else 
 		{
-			l= (7*n) % 16;
+			TEMP = D;
+		        D = C;
+		        C = B;
+			B = B + CORRIMIENTO_IZQ(((A +I(B,C,D) + M[l] + K [n])),S[j]);
+			A = TEMP;
 		}
-		for (int j=0; j<16; j++)
-		{
-				if (i == 0 ) 
-				{
-		            TEMP = D;
-		            D = C;
-		            C = B;
-					B = B + CORRIMIENTO_IZQ(((A +F(B,C,D) + M[l] + K [n])),S[j]);
-			        A = TEMP;
-				}
-				else if (i == 1)
-				{
-		        	TEMP = D;
-		            D = C;
-		            C = B;
-					B = B + CORRIMIENTO_IZQ(((A +G(B,C,D) + M[l] + K [n])),S[j]);
-			        A = TEMP;
-		        }
-				else if (n < 48)
-				{
-		            TEMP = D;
-		            D = C;
-		            C = B;
-					B = B + CORRIMIENTO_IZQ(((A +H(B,C,D) + M[l] + K [n])),S[j]);
-			        A = TEMP;         
-		        }
-				else 
-				{
-					TEMP = D;
-		            D = C;
-		            C = B;
-					B = B + CORRIMIENTO_IZQ(((A +I(B,C,D) + M[l] + K [n])),S[j]);
-			        A = TEMP;
-				}
-			n+=1;
-			}
+	n+=1;
+		}
 	}
 	H0+=A;
 	H1+=B;
 	H2+=C;
 	H3+=D;
-	system ("pause");
 	return 0;
 }
