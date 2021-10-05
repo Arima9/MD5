@@ -26,24 +26,16 @@ int main (int argc, char *argv[])
 	 * arreglos para almacenar datos, y las variables temporales donde
 	 * se realizaran las operaciones
 	 * */
-
-	const char one = 0x80;
-	unsigned char i = 0, j = 0, k = 0;
-	unsigned char letra=0;
+	buff32bit one = 0x80, full = 0xFF, M[16];
 	buff32bit cntBits0=0, cntBits1=0, temp;
-	unsigned char nBloques;
-	//Creacion de los datos A, B, C, D y sus valores temporales
 	buff32bit A,B,C,D,AA,BB,CC,DD;
-
-	//Creacion del bloque de palabras M de tipo _32bitBuff
-	buff32bit M[16];
-
+	unsigned char cicl=0, i = 0, j = 0, k = 0, letra=0, nBloques;
+	FILE *Archivo;
 	//Creacion del array de corrimientos S
 	unsigned char S[] = {7, 12, 17, 22, 
 		             5,  9, 14, 20,
 			     4, 11, 16, 23,
 			     6, 10, 15, 21};
-
 	//Creacion del array de K
 	buff32bit K[] = {
         0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee,
@@ -63,42 +55,42 @@ int main (int argc, char *argv[])
         0x6fa87e4f, 0xfe2ce6e0, 0xa3014314, 0x4e0811a1,
         0xf7537e82, 0xbd3af235, 0x2ad7d2bb, 0xeb86d391};
 
-
-	//Creacion de la ruta del archivo
+	 /*------------Lectura del archivo------------*/
 	char *let = argv[1]; //Asignacion de puntero
 	char ruta[50]={"./"}; //Array donde se guarda la ruta del archivo
 
-	//Asignacion del nombre para crear la ruta
+	//Organizacion de la ruta relativa
 	i = 2;
-	while (*let != NULL){
+	while (*let != '\0'){
 		ruta[i] = *let;
 		i++;
 		let++;
 	}
-	ruta[i] = NULL;
-	
+	ruta[i] = '\0';
+	Archivo = fopen(ruta, "r");
+	/*
 	//Se imprime la ruta que se obtiene
 	printf("La ruta queda: %s\n", ruta);
+	*/
+
+	//Se asignan los valores iniciales al buffer
+	A = 0x01234567;
+	B = 0x89ABCDEF;
+	C = 0xFEDCBA98;
+	D = 0x76543210;
 
 	/*
-	 * Bloque en trabajo.......
-	 * Este bloque comentado se encarga de leer el archivo y pasarlo a un
-	 * array de registros de 32 bits llamado M.
+	 * Este bloque de codigo se encarga de leer el archivo y pasarlo a un
+	 * array de registros de 32 bits llamado M para cada bloque.
 	 */
-	//Apertura del archivo en modo de solo lectura
-	
-	//Descomentar para seguir trabajando en el
 
-	
-	FILE *Archivo;
-	Archivo = fopen(ruta, "r");
-	//for(; k <= nBloques; k++){Se realiza las iteraciones} Se suma hashs
+	for(; k <= nBloques; k++){
 	//Paso de informacion del archivo al bloque M
-	for (i=0; i < 16; i++) M[i] = (buff32bit)(0x00);
-	for (i = 0; i < 16 && letra != -1; i++){
+	for (i=0; i < 16; i++) M[i] = 0;
+	for (i = 0; i < 16 && letra != 0XFF; i++){
 			for (j = 0; j < 4; j++){
 				letra = fgetc(Archivo);
-				if (letra =! -1){
+				if (letra != 0xFF){
 					M[i] = M[i] | ((buff32bit)(letra)<<(8*j));
 					if (cntBits0 == 0xFFFFFFF8){
 						cntBits0 += 8;
@@ -107,35 +99,41 @@ int main (int argc, char *argv[])
 					else cntBits0 += 8;
 				}
 				else {
-					M[i] = M[i]|((buff32bit)(one)<<(8*j));
+					M[i] = M[i]|(one<<(8*j));
 					break;
 				}
 			}
-			if (letra == -1) break;
+			if (letra == 0XFF) break;
 	}
+	
 	//Si el bloque de codigo anterior abarca mas de 448 bits entonces
 	//aumenta el contador de bloques M en uno
 	if (i >= 14) nBloques++;
-
 	//Ingreso del tamaño del mensaje
-	if ((letra == -1) && (i < 14)){
+	if ((letra == 0XFF) && (i < 14)){
 			for (j = 0; j < 4; j++){
-				temp =((cntBits0 >> (8*j)) & (buff32bit)0xFF); 
-				M[14] = M[14] | (temp << (8*(3-j)));
+				temp = (cntBits0 >> (8*j)) & full;
+				M[14] = M[14] | (temp << (8*j));
 				
-				temp =((cntBits1 >> (8*j)) & (buff32bit)0xFF); 
-				M[15] = M[15] | (temp << (8*(3-j)));
+				temp =((cntBits1 >> (8*j)) & full); 
+				M[15] = M[15] | (temp << (8*j));
 			}
 	} 
-		//tamañoOrigial = 0X3267abcc
-		//tamañoLittleE = 0Xccab6732
-	
+	/*
+	//Estas lineas de codigo sirven para desplegar los bloques M de cada
+	//iteracion.
+	printf("----------Impresion del bloque M%d----------\n", k+1);
 
-	//Se asignan los valores iniciales al buffer
-	A = 0x01234567;
-	B = 0x89ABCDEF;
-	C = 0xFEDCBA98;
-	D = 0x76543210;
+	for (cicl=0; cicl < 16; cicl++){
+		printf("0x%8lx\n", M[cicl]);
+	}
+	*/
+
+	
+	}
+	//fin de las 64 iteraciones para cada bloque
+
+	
 
 
 /* Se agrega branch de Gustavo */
