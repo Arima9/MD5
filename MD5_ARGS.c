@@ -19,7 +19,7 @@
 #define H(x, y, z) ((x) ^ (y) ^ (z))
 #define I(x, y, z) ((y) ^ ((x) | (~z)))
 //Definicion de la funcion de corrimiento izquierdo
-#define CORRIMIENTO_IZQ(num, cantidad) (((num) << (cantidad)) | ((num) >> (32 - (cantidad))))
+#define CORRIMIENTO_IZQ(num, cantidad) ((num << cantidad) | (num >> (32 - cantidad)))
 
 typedef unsigned long int buff32bit;
 
@@ -143,15 +143,16 @@ for(k = 0; k <= nBloques; k++){
 	} 
 	//Estas lineas de codigo sirven para desplegar los bloques M de cada
 	//iteracion.
-	//printf("----------Impresion del bloque M%d----------\n", k+1);
-
-	//for (cicl=0; cicl < 16; cicl++) printf("0x%8lx\n", M[cicl]);
+	printf("----------Impresion del bloque M%d----------\n", k+1);
+	for (cicl=0; cicl < 16; cicl++) printf("0x%8lx\n", M[cicl]);
 
 /* Se agrega branch de Gustavo */
+printf("------------Inicio del algoritmo----------------\n");
+printf("Valores de (A B C D)\n");
+printf("t%d %lX %lX %lX %lX\n", n, A,B,C,D);	
 for (i=0;i<4;i++){
-
+	
 	for (j=0; j<16; j++, n++){
-		
 		if (n < 16) l = n;
 		else if (n < 32) l = (5*n + 1) % 16;
 		else if (n < 48) l = (3*n + 5) % 16;          
@@ -161,10 +162,11 @@ for (i=0;i<4;i++){
 			//AA = D
 			//CC = B
 			//DD = C
-		
+		printf("M[%d]=%lX   K[%d]=%lX   S[%d][%d]=%d\n",l,M[l], n, K[n], i, j%4, S[i][j%4]);
 		if (i == 0 ){
 			AA = D;
-			BB = B + CORRIMIENTO_IZQ(((A +F(B,C,D) + M[l] + K [n])),S[i][j%4]);
+			BB = (B + CORRIMIENTO_IZQ(((A +F(B,C,D) + M[l] + K [n])),S[i][j%4]));
+			BB = BB & 0XFFFFFFFF;
 			CC = B;
 		        DD = C;
 
@@ -172,18 +174,21 @@ for (i=0;i<4;i++){
 		else if (i == 1){
 			AA = D;
 			BB = B + CORRIMIENTO_IZQ(((A +G(B,C,D) + M[l] + K [n])),S[i][j%4]);
+			BB = BB & 0XFFFFFFFF;
 			CC = B;
 		        DD = C;
 		}
 		else if (i == 2){
 			AA = D;
 			BB = B + CORRIMIENTO_IZQ(((A +H(B,C,D) + M[l] + K [n])),S[i][j%4]);
+			BB = BB & 0XFFFFFFFF;
 			CC = B;
 		        DD = C;
 		}
-		else{
+		else if (i == 3){
 			AA = D;
 			BB = B + CORRIMIENTO_IZQ(((A +I(B,C,D) + M[l] + K [n])),S[i][j%4]);
+			BB = BB & 0XFFFFFFFF;
 			CC = B;
 		        DD = C;
 		}
@@ -191,6 +196,7 @@ for (i=0;i<4;i++){
 		B = BB;
 		C = CC;
 		D = DD;
+		printf("t%d %lX %lX %lX %lX\n", n+1, A,B,C,D);	
 
 	}
 }
