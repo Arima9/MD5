@@ -1,7 +1,5 @@
 #include <stdio.h>
-#include <string.h>
-#include <stdbool.h>
-#include <stdlib.h>
+#include <stdint.h>
 
 /*
  * Programa que calcula la "huella digital" de un archivo por medio del
@@ -18,28 +16,29 @@
 #define G(x, y, z) (((x) & (z)) | ((y) & (~z)))
 #define H(x, y, z) ((x) ^ (y) ^ (z))
 #define I(x, y, z) ((y) ^ ((x) | (~z)))
+
 //Definicion de la funcion de corrimiento izquierdo
-#define CORRIMIENTO_IZQ(num, cantidad) (((num) << (cantidad)) | ((num) >> (32 - (cantidad))))
+#define CORRIMIENTO_IZQ(num, cantidad) ((num << cantidad) | (num >> (32 - cantidad)))
 
-typedef unsigned long int buff32bit;
+typedef uint32_t buff32bit;
 
-int main (int argc, char *argv[])
-{
+int main (int argc, char *argv[]) {
 	/*Se deben crear primero todas las variables y arreglos necesarios
 	 * para el programa, estructuras de datos, arreglos de constantes,
 	 * arreglos para almacenar datos, y las variables temporales donde
 	 * se realizaran las operaciones
 	 * */
 	buff32bit one = 0x80, full = 0xFF, M[16];
-	buff32bit cntBits0=0, cntBits1=0, temp;
+	buff32bit cntBits0=0, cntBits1=0, temp, nBloques=0;
 	buff32bit A,B,C,D,AA,BB,CC,DD, TEMP = 0, H0, H1, H2, H3;
-	unsigned char cicl=0, i = 0, j = 0, k = 0, letra=0, nBloques;
+	unsigned char cicl=0, i = 0, j = 0, k, letra=0; 
 	FILE *Archivo;
+	int l=0, n=0;
 	//Creacion del array de corrimientos S
-	unsigned char S[] = {7, 12, 17, 22, 
-		             5,  9, 14, 20,
-			     4, 11, 16, 23,
-			     6, 10, 15, 21};
+	unsigned char S[4][4] = {{7, 12, 17, 22}, 
+				{5,  9, 14, 20},
+				{4, 11, 16, 23},
+				{6, 10, 15, 21}};
 	//Creacion del array de K
 	buff32bit K[] = {
         0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee,
@@ -77,29 +76,52 @@ int main (int argc, char *argv[])
 	printf("La ruta queda: %s\n", ruta);
 	*/
 
-	//Se asignan los valores iniciales al buffer
+	//Se asignan los valores iniciales al buffer en little endian
 	A = 0x67452301;
 	B = 0xEFCDAB89;
 	C = 0x98BADCFE;
 	D = 0x10325476;
+	//Se inicializan a los mismos valores las variables que contendran
+	//el hash MD5 calculado final.
 	H0 = A;
 	H1 = B;
 	H2 = C;
 	H3 = D;
 
+
+//Ciclo for que repite el proceso de obtencion de hash dependiendo del numero
+//de bloques que se obtuvieron
+for(k = 0; k <= nBloques; k++){
 	/*
 	 * Este bloque de codigo se encarga de leer el archivo y pasarlo a un
 	 * array de registros de 32 bits llamado M para cada bloque.
 	 */
-
-for(; k <= nBloques; k++){
-	//Paso de informacion del archivo al bloque M
+	if (k==0){
+		A = 0x67452301;
+		B = 0xEFCDAB89;
+		C = 0x98BADCFE;
+		D = 0x10325476;
+	}
+	else{
+		A = H0;
+		B = H1;
+		C = H2;
+		D = H3;
+	}
+	//Se setea el arreglo M a 0 cada inicio del ciclo
 	for (i=0; i < 16; i++) M[i] = 0;
+
+	//Paso de informacion del archivo al bloque M
 	for (i = 0; i < 16 && letra != 0XFF; i++){
 			for (j = 0; j < 4; j++){
+				//Append de los caracteres del archivo a las
+				//words de M, en little endian
 				letra = fgetc(Archivo);
 				if (letra != 0xFF){
 					M[i] = M[i] | ((buff32bit)(letra)<<(8*j));
+					
+					//Condicional que contara el tamaño
+					//del mensaje
 					if (cntBits0 == 0xFFFFFFF8){
 						cntBits0 += 8;
 						cntBits1 += 1;
@@ -119,85 +141,96 @@ for(; k <= nBloques; k++){
 	if (i >= 14) nBloques++;
 	//Ingreso del tamaño del mensaje
 	if ((letra == 0XFF) && (i < 14)){
-			for (j = 0; j < 4; j++){
-				temp = (cntBits0 >> (8*j)) & full;
-				M[14] = M[14] | (temp << (8*j));
-				
-				temp =((cntBits1 >> (8*j)) & full); 
-				M[15] = M[15] | (temp << (8*j));
-			}
+		//Si las condiciones se cumplen, se agregan en las ultimas dos
+		//palabras el tamaño del mensaje.
+		for (j = 0; j < 4; j++){
+			temp = (cntBits0 >> (8*j)) & full;
+			M[14] = M[14] | (temp << (8*j));
+			
+			temp =((cntBits1 >> (8*j)) & full); 
+			M[15] = M[15] | (temp << (8*j));
+		}
 	} 
 	//Estas lineas de codigo sirven para desplegar los bloques M de cada
 	//iteracion.
-	printf("----------Impresion del bloque M%d----------\n", k+1);
+	//printf("----------Impresion del bloque M%d----------\n", k+1);
+	//for (cicl=0; cicl < 16; cicl++) printf("0x%X\n", M[cicl]);
 
-	for (cicl=0; cicl < 16; cicl++) printf("0x%8lx\n", M[cicl]);
+/*printf("------------Inicio del algoritmo----------------\n");
+printf("Valores de (A B C D)\n");
+printf("t%d %X %X %X %X\n", n, A,B,C,D);*/
+//printf("size of: %d %d %d %d\n", sizeof(A), sizeof(B), sizeof(C), sizeof(D));
+for (i=0;i<4;i++){
+	
+	for (j=0; j<16; j++, n++){
+		if (n < 16) l = n;
+		else if (n < 32) l = (5*n + 1) % 16;
+		else if (n < 48) l = (3*n + 5) % 16;          
+		else l= (7*n) % 16;
 
-/* Se agrega branch de Gustavo */
-int l=0, n=0;
-for (int i=0;i<4;i++)
-	{
-	if (n < 16) 
-	{
-            l = n;
-        }
-	else if (n < 32)
-	{
-		l = (5*n + 1) % 16;
-        }
-	else if (n < 48)
-	{
-		l = (3*n + 5) % 16;          
-        }
-	else 
-	{
-		l= (7*n) % 16;
+		//printf("M[%d]=%lX   K[%d]=%lX   S[%d][%d]=%d\n",l,M[l], n, K[n], i, j%4, S[i][j%4]);
+		if (i == 0 ){
+			AA = D;
+			BB = (B + CORRIMIENTO_IZQ(((A +F(B,C,D) + M[l] + K [n])),S[i][j%4]));
+			CC = B;
+		        DD = C;
+
+		}
+		else if (i == 1){
+			AA = D;
+			BB = B + CORRIMIENTO_IZQ(((A +G(B,C,D) + M[l] + K [n])),S[i][j%4]);
+			CC = B;
+		        DD = C;
+		}
+		else if (i == 2){
+			AA = D;
+			BB = B + CORRIMIENTO_IZQ(((A +H(B,C,D) + M[l] + K [n])),S[i][j%4]);
+			CC = B;
+		        DD = C;
+		}
+		else if (i == 3){
+			AA = D;
+			BB = B + CORRIMIENTO_IZQ(((A +I(B,C,D) + M[l] + K [n])),S[i][j%4]);
+			CC = B;
+		        DD = C;
+		}
+		A = AA;
+		B = BB;
+		C = CC;
+		D = DD;
+		//printf("t%d %X %X %X %X\n", n+1, A,B,C,D);	
 	}
-	for (int j=0; j<16; j++)
-		{
-		if (i == 0 ) 
-		{
-			TEMP = D;
-		        D = C;
-		        C = B;
-			B = B + CORRIMIENTO_IZQ(((A +F(B,C,D) + M[l] + K [n])),S[j]);
-			A = TEMP;
-		}
-		else if (i == 1)
-		{
-		        TEMP = D;
-		        D = C;
-		        C = B;
-			B = B + CORRIMIENTO_IZQ(((A +G(B,C,D) + M[l] + K [n])),S[j]);
-			A = TEMP;
-		}
-		else if (i == 2)
-		{
-		        TEMP = D;
-		        D = C;
-		        C = B;
-			B = B + CORRIMIENTO_IZQ(((A +H(B,C,D) + M[l] + K [n])),S[j]);
-			A = TEMP;         
-		}
-		else 
-		{
-			TEMP = D;
-		        D = C;
-		        C = B;
-			B = B + CORRIMIENTO_IZQ(((A +I(B,C,D) + M[l] + K [n])),S[j]);
-			A = TEMP;
-		}
-	n+=1;
-		}
-	}
+}
 
+	//printf("----------Impresion del bloque M%d----------\n", k+1);
+	//for (cicl=0; cicl < 16; cicl++) printf("0x%8lx\n", M[cicl]);
 	//fin de las 64 iteraciones para cada bloque
 	//Se actualiza el valor del hash global.
+	//printf("%X %X %X %X\n", A,B,C,D);
+	//printf("%X %X %X %X\n", H0,H1,H2,H3);
+	//printf("-------------------------------------------\n");
 	H0+=A;
 	H1+=B;
 	H2+=C;
 	H3+=D;
+	//printf("%X %X %X %X\n", H0,H1,H2,H3);
+	
+	n = 0;
 }
+//Fin del algoritmo, inversion del hash a little endian.
+A=0;
+B=0;
+C=0;
+D=0;
+
+for (i=0; i<4; i++){
+	A = A | ((H0>>(i*8)) & full)<<(8*(3-i));
+	B = B | ((H1>>(i*8)) & full)<<(8*(3-i));
+	C = C | ((H2>>(i*8)) & full)<<(8*(3-i));
+	D = D | ((H3>>(i*8)) & full)<<(8*(3-i));
+}
+
+printf("MD5 = %X %X %X %X\n", A, B, C, D);
 
        	return 0; 
 } 
@@ -212,4 +245,3 @@ for (int i=0;i<4;i++)
  * vi: set shiftwidth=8 tabstop=8 noexpandtab:
  * :indentSize=8:tabSize=8:noTabs=false:
  */
-
