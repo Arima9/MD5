@@ -10,11 +10,11 @@ El algoritmo MD5 (Message-Digest Algorithm 5) es un algoritmo de reducción crip
 
 ### Directivas de preprocesador ###
 
-En este código primeramente se definen (#define) las funciones auxiliares establecidas por el algoritmo para procesar el mensaje en 4 bloques de 16 palabras. [Lineas de código ## a ##]
+En este código primeramente se definen (#define) las funciones auxiliares establecidas por el algoritmo para procesar el mensaje en 4 bloques de 16 palabras. [Lineas de código 16 a 19]
 
-Asimismo, se define una función de corrimiento a la izquierda, la cual, dependiendo de qué iteración de cada bloque de 16 palabras de se encuentre, realizará un corrimiento conocido. [Lineas de código ## a ##]
+Asimismo, se define una función de corrimiento a la izquierda, la cual, dependiendo de qué iteración de cada bloque de 16 palabras de se encuentre, realizará un corrimiento conocido. [Lineas de código 22]
 
-Como el algoritmo trabaja con un buffer de 128, viéndose éste como 4 registros de 32 bits (A, B, C y D) se crea un nuevo tipo de variable de tamaño específico para evitar problemas con el desbordamiento de la variable. [Linea #]
+Como el algoritmo trabaja con un buffer de 128, viéndose éste como 4 registros de 32 bits (A, B, C y D) se crea un nuevo tipo de variable de tamaño específico para evitar problemas con el desbordamiento de la variable. [Linea 25]
 
 ### Lectura del archivo ###
 
