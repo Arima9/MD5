@@ -1,7 +1,9 @@
 ######################################################
+
 	* TAREA 04 / EQUIPO
 	* ANDRES RIVERA MARQUEZ
 	* GUSTAVO ALEJANDRO SOLORIO RAMOS
+
 ######################################################
 
 El algoritmo MD5 (Message-Digest Algorithm 5) es un algoritmo de reducción criptográfico de 128 bits, crea un resumen con una clave única llamada “hash” que comprueba la integridad del archivo, ya que cualquier cambio mínimo en el archivo original puede arrojar una alteración del 50% del hash a comprobar.
